@@ -28,10 +28,10 @@ layout: default
     
     <div class="post-nav">
       {% if page.previous %}
-        <a href="{{ page.previous.url | relative_url }}" class="prev">← {{ page.previous.title | truncatewords: 10 }}</a>
+        <a href="{{ site.baseurl }}{{ page.previous.url }}" class="prev">← {{ page.previous.title | truncatewords: 10 }}</a>
       {% endif %}
       {% if page.next %}
-        <a href="{{ page.next.url | relative_url }}" class="next">{{ page.next.title | truncatewords: 10 }} →</a>
+        <a href="{{ site.baseurl }}{{ page.next.url }}" class="next">{{ page.next.title | truncatewords: 10 }} →</a>
       {% endif %}
     </div>
   </footer>

@@ -14,7 +14,7 @@ permalink: /archive/
     <div class="archive-item">
       <span class="archive-date">{{ post.date | date: "%b %-d" }}</span>
       <span class="archive-link">
-        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
       </span>
     </div>
   {% endfor %}
