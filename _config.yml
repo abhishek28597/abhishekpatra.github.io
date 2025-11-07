@@ -1,18 +1,17 @@
 # Site settings
-title: Your Name
-email: your-email@domain.com
+title: Abhishek Patra
+email: abhisheksaddress@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  Personal blog about AI, machine learning, and technology.
+  Personal blog about Life, AI and engineering.
 baseurl: "/abhishekpatra.github.io" # the subpath of your site, e.g. /blog
 url: "https://abhishek28597.github.io" # your site's URL
-twitter_username: yourtwitter
-github_username:  yourgithub
+twitter_username: abhi20285
+github_username:  abhishek28597
 
 # Build settings
 markdown: kramdown
 highlighter: rouge
 
-# Permalink structure - same as Karpathy's
 permalink: /:year/:month/:day/:title/
 
 # Pagination
