@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write | Abhishek Patra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1915;
+            --bg-secondary: #242220;
+            --bg-tertiary: #2d2a27;
+            --text-primary: #e8e4dc;
+            --text-secondary: #a8a49c;
+            --text-muted: #6b6760;
+            --accent: #e89b4c;
+            --accent-dim: #c4793a;
+            --border: #3d3a36;
+            --success: #7cb380;
+            --error: #d98282;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .header h1 {
+            font-family: 'Instrument Serif', serif;
+            font-weight: 400;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .header h1 span {
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dim);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Main content */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Editor pane */
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+
+        .title-input {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            padding: 1.5rem 2rem 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .title-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Metadata toggle */
+        .metadata-toggle {
+            padding: 0 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metadata-toggle button {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .metadata-toggle button:hover {
+            color: var(--text-secondary);
+        }
+
+        .metadata-toggle .arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .metadata-toggle button.open .arrow {
+            transform: rotate(90deg);
+        }
+
+        /* Metadata fields */
+        .metadata-fields {
+            display: none;
+            padding: 0 2rem 1rem;
+            gap: 1rem;
+        }
+
+        .metadata-fields.open {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .metadata-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .metadata-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .metadata-field label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metadata-field input,
+        .metadata-field textarea {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .metadata-field input:focus,
+        .metadata-field textarea:focus {
+            border-color: var(--accent-dim);
+        }
+
+        .metadata-field textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .metadata-field .hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Editor */
+        .editor-container {
+            flex: 1;
+            padding: 0 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor {
+            flex: 1;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            resize: none;
+            outline: none;
+        }
+
+        .editor::placeholder {
+            color: var(--text-muted);
+        }
+
+        .editor:focus {
+            border-color: var(--accent-dim);
+        }
+
+        /* Preview pane */
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Preview typography */
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3 {
+            font-family: 'Instrument Serif', serif;
+            font-weight: 400;
+            color: var(--text-primary);
+            margin: 1.5em 0 0.5em;
+        }
+
+        .preview-content h1:first-child,
+        .preview-content h2:first-child,
+        .preview-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .preview-content h1 { font-size: 2rem; }
+        .preview-content h2 { font-size: 1.5rem; }
+        .preview-content h3 { font-size: 1.25rem; }
+
+        .preview-content p {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 1em;
+        }
+
+        .preview-content a {
+            color: var(--accent);
+        }
+
+        .preview-content code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85em;
+            background: var(--bg-tertiary);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+
+        .preview-content pre {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .preview-content pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .preview-content ul,
+        .preview-content ol {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin: 1em 0;
+            padding-left: 1.5em;
+        }
+
+        .preview-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1em;
+            margin: 1em 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .preview-content img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        /* Settings modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border);
+        }
+
+        .modal h2 {
+            font-family: 'Instrument Serif', serif;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal .warning {
+            background: rgba(232, 155, 76, 0.1);
+            border: 1px solid var(--accent-dim);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal input {
+            width: 100%;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            outline: none;
+            margin-bottom: 1rem;
+        }
+
+        .modal input:focus {
+            border-color: var(--accent-dim);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+            color: var(--bg-primary);
+        }
+
+        .toast.error {
+            background: var(--error);
+            color: var(--bg-primary);
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main {
+                flex-direction: column;
+            }
+
+            .editor-pane {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .preview-pane {
+                max-height: 50vh;
+            }
+
+            .metadata-fields.open {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Write<span>.</span></h1>
+        <div class="header-actions">
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Not configured</span>
+            </div>
+            <button class="btn btn-secondary" id="settingsBtn">Settings</button>
+            <button class="btn btn-primary" id="publishBtn" disabled>Publish</button>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="editor-pane">
+            <input type="text" class="title-input" id="titleInput" placeholder="Post title...">
+            
+            <div class="metadata-toggle">
+                <button id="metadataToggle">
+                    <span class="arrow">▶</span>
+                    Metadata
+                </button>
+            </div>
+
+            <div class="metadata-fields" id="metadataFields">
+                <div class="metadata-field">
+                    <label>Categories</label>
+                    <input type="text" id="categoriesInput" placeholder="e.g., tech, life">
+                    <span class="hint">Comma-separated</span>
+                </div>
+                <div class="metadata-field">
+                    <label>Tags</label>
+                    <input type="text" id="tagsInput" placeholder="e.g., javascript, tutorial">
+                    <span class="hint">Comma-separated</span>
+                </div>
+                <div class="metadata-field">
+                    <label>Reading Time (minutes)</label>
+                    <input type="number" id="readingTimeInput" placeholder="5" min="1">
+                </div>
+                <div class="metadata-field full-width">
+                    <label>Excerpt</label>
+                    <textarea id="excerptInput" placeholder="A brief description of your post..."></textarea>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <textarea class="editor" id="editor" placeholder="Start writing in Markdown...
+
+# Heading 1
+## Heading 2
+
+**Bold text** and *italic text*
+
+- List item 1
+- List item 2
+
+```python
+print('Hello, World!')
+```"></textarea>
+            </div>
+        </section>
+
+        <section class="preview-pane">
+            <div class="preview-header">Preview</div>
+            <div class="preview-content" id="preview">
+                <p style="color: var(--text-muted); font-style: italic;">Start typing to see preview...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h2>GitHub Settings</h2>
+            <p>Enter your GitHub Personal Access Token to enable publishing. You can create one at <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent);">github.com/settings/tokens</a> with the <code>repo</code> scope.</p>
+            
+            <div class="warning">
+                ⚠️ Your token will be stored in your browser's localStorage. Only use this on trusted devices.
+            </div>
+
+            <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="clearTokenBtn">Clear Token</button>
+                <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveTokenBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        // GitHub config
+        const GITHUB_OWNER = 'abhishek28597';
+        const GITHUB_REPO = 'abhishekpatra.github.io';
+        const POSTS_PATH = '_posts';
+
+        // DOM elements
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const titleInput = document.getElementById('titleInput');
+        const categoriesInput = document.getElementById('categoriesInput');
+        const tagsInput = document.getElementById('tagsInput');
+        const excerptInput = document.getElementById('excerptInput');
+        const readingTimeInput = document.getElementById('readingTimeInput');
+        const publishBtn = document.getElementById('publishBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const tokenInput = document.getElementById('tokenInput');
+        const saveTokenBtn = document.getElementById('saveTokenBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const clearTokenBtn = document.getElementById('clearTokenBtn');
+        const metadataToggle = document.getElementById('metadataToggle');
+        const metadataFields = document.getElementById('metadataFields');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const toast = document.getElementById('toast');
+
+        // Configure marked with highlight.js
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true
+        });
+
+        // Initialize
+        function init() {
+            checkToken();
+            loadDraft();
+            setupEventListeners();
+        }
+
+        // Check if token exists
+        function checkToken() {
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Connected';
+                publishBtn.disabled = false;
+            } else {
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Not configured';
+                publishBtn.disabled = true;
+            }
+        }
+
+        // Load draft from localStorage
+        function loadDraft() {
+            const draft = localStorage.getItem('post_draft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                titleInput.value = data.title || '';
+                editor.value = data.content || '';
+                categoriesInput.value = data.categories || '';
+                tagsInput.value = data.tags || '';
+                excerptInput.value = data.excerpt || '';
+                readingTimeInput.value = data.readingTime || '';
+                updatePreview();
+            }
+        }
+
+        // Save draft to localStorage
+        function saveDraft() {
+            const draft = {
+                title: titleInput.value,
+                content: editor.value,
+                categories: categoriesInput.value,
+                tags: tagsInput.value,
+                excerpt: excerptInput.value,
+                readingTime: readingTimeInput.value
+            };
+            localStorage.setItem('post_draft', JSON.stringify(draft));
+        }
+
+        // Update preview
+        function updatePreview() {
+            const content = editor.value;
+            if (content.trim()) {
+                preview.innerHTML = marked.parse(content);
+                // Re-highlight code blocks
+                preview.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            } else {
+                preview.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Start typing to see preview...</p>';
+            }
+        }
+
+        // Generate slug from title
+        function generateSlug(title) {
+            return title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+        }
+
+        // Parse comma-separated values
+        function parseList(str) {
+            return str.split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+        }
+
+        // Generate front matter
+        function generateFrontMatter() {
+            const title = titleInput.value.trim();
+            const date = new Date().toISOString().split('T')[0];
+            const categories = parseList(categoriesInput.value);
+            const tags = parseList(tagsInput.value);
+            const excerpt = excerptInput.value.trim();
+            const readingTime = readingTimeInput.value;
+
+            let frontMatter = '---\n';
+            frontMatter += 'layout: post\n';
+            frontMatter += `title: "${title}"\n`;
+            frontMatter += `date: ${date}\n`;
+            
+            if (categories.length > 0) {
+                frontMatter += `categories: [${categories.join(', ')}]\n`;
+            }
+            
+            if (tags.length > 0) {
+                frontMatter += `tags: [${tags.join(', ')}]\n`;
+            }
+            
+            if (excerpt) {
+                frontMatter += `excerpt: "${excerpt}"\n`;
+            }
+            
+            if (readingTime) {
+                frontMatter += `reading_time: ${readingTime}\n`;
+            }
+            
+            frontMatter += '---\n\n';
+            
+            return frontMatter;
+        }
+
+        // Generate filename
+        function generateFilename() {
+            const date = new Date().toISOString().split('T')[0];
+            const slug = generateSlug(titleInput.value);
+            return `${date}-${slug}.md`;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Publish to GitHub
+        async function publish() {
+            const token = localStorage.getItem('github_token');
+            if (!token) {
+                showToast('Please configure your GitHub token first', 'error');
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            if (!title) {
+                showToast('Please enter a title', 'error');
+                return;
+            }
+
+            const content = editor.value.trim();
+            if (!content) {
+                showToast('Please write some content', 'error');
+                return;
+            }
+
+            publishBtn.disabled = true;
+            publishBtn.textContent = 'Publishing...';
+
+            const filename = generateFilename();
+            const fileContent = generateFrontMatter() + content;
+            const encodedContent = btoa(unescape(encodeURIComponent(fileContent)));
+
+            try {
+                const response = await fetch(
+                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_PATH}/${filename}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        body: JSON.stringify({
+                            message: `Add post: ${title}`,
+                            content: encodedContent
+                        })
+                    }
+                );
+
+                if (response.ok) {
+                    showToast('Post published successfully!', 'success');
+                    // Clear draft
+                    localStorage.removeItem('post_draft');
+                    // Clear form
+                    titleInput.value = '';
+                    editor.value = '';
+                    categoriesInput.value = '';
+                    tagsInput.value = '';
+                    excerptInput.value = '';
+                    readingTimeInput.value = '';
+                    updatePreview();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to publish');
+                }
+            } catch (error) {
+                showToast(`Error: ${error.message}`, 'error');
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.textContent = 'Publish';
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Editor input
+            editor.addEventListener('input', () => {
+                updatePreview();
+                saveDraft();
+            });
+
+            // Title input
+            titleInput.addEventListener('input', saveDraft);
+            categoriesInput.addEventListener('input', saveDraft);
+            tagsInput.addEventListener('input', saveDraft);
+            excerptInput.addEventListener('input', saveDraft);
+            readingTimeInput.addEventListener('input', saveDraft);
+
+            // Metadata toggle
+            metadataToggle.addEventListener('click', () => {
+                metadataToggle.classList.toggle('open');
+                metadataFields.classList.toggle('open');
+            });
+
+            // Settings modal
+            settingsBtn.addEventListener('click', () => {
+                tokenInput.value = localStorage.getItem('github_token') || '';
+                settingsModal.classList.add('open');
+            });
+
+            cancelModalBtn.addEventListener('click', () => {
+                settingsModal.classList.remove('open');
+            });
+
+            saveTokenBtn.addEventListener('click', () => {
+                const token = tokenInput.value.trim();
+                if (token) {
+                    localStorage.setItem('github_token', token);
+                    showToast('Token saved successfully!', 'success');
+                }
+                settingsModal.classList.remove('open');
+                checkToken();
+            });
+
+            clearTokenBtn.addEventListener('click', () => {
+                localStorage.removeItem('github_token');
+                tokenInput.value = '';
+                settingsModal.classList.remove('open');
+                checkToken();
+                showToast('Token cleared', 'success');
+            });
+
+            // Click outside modal to close
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.remove('open');
+                }
+            });
+
+            // Publish
+            publishBtn.addEventListener('click', publish);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Cmd/Ctrl + Enter to publish
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!publishBtn.disabled) {
+                        publish();
+                    }
+                }
+                // Escape to close modal
+                if (e.key === 'Escape' && settingsModal.classList.contains('open')) {
+                    settingsModal.classList.remove('open');
+                }
+            });
+
+            // Tab in editor
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const start = editor.selectionStart;
+                    const end = editor.selectionEnd;
+                    editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
+                    editor.selectionStart = editor.selectionEnd = start + 4;
+                    saveDraft();
+                }
+            });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
+
